@@ -1,65 +1,12 @@
-#Declare Variables
-$SearchDirectory = "D:\Dropbox\IFTTT\"
-$CommandFile = "$SearchDirectory\cmd.txt"
-$SleepTime = 5
+﻿$device = "*Intel(R) Wireless Bluetooth(R)*"
+Get-Device | where {$_.name -like $device} | Disable-Device
+Get-Device | where {$_.name -like $device} | Enable-Device
 
-Do {
-
-#Removes the file from the directory, in case the file was not deleted. Sets the error action in case the file is not present.
-Remove-Item -Path $CommandFile -Force -ErrorAction SilentlyContinue
-
-#Loop checking to see if the file has been created and once it has it continues on. Sleep in the look to prevent CPU pegging
-Do {
-Start-Sleep -Seconds $SleepTime
-$FileCheck = Test-Path -Path $CommandFile
-}
-Until ($FileCheck -eq $True)
-
-$IFTT= Get-Content $CommandFile -First 1
-
-#Removes the shutdown file to prevent an imediate shutdown when the computer starts back up
-Remove-Item -Path $CommandFile
-
-#Shuts the computer down forcefully but gracefully
-#Stop-Computer -Force
-
-$TS = Get-Date -Format G
-
-
-switch ( $IFTT )
-{
-    Reboot
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\RebootNUC.ps1"
-    }
-    Shutdown
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\ShutdownVbox.ps1"
-    }
-    default 
-    {
-       $PSscript = 'unknown'
-    }
-}
-
-
-$numTabs = 8
-
-"$IFTT, $PSscript, $TS" | Out-File "$SearchDirectory\log.txt" -Append 
-
-if (Test-Path $PSscript) 
-{
-    & $PSscript
-}
-else {"No script"}
-
- 
-} while (1)
 # SIG # Begin signature block
 # MIIfoQYJKoZIhvcNAQcCoIIfkjCCH44CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBKfX8q1DrWGIaXRgGIQoJXK/
-# FFKgghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwMkuANoAb5fQKWjFUq2RIERf
+# Y4Ogghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
 # AQUFADBvMQswCQYDVQQGEwJTRTEUMBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNV
 # BAsTHUFkZFRydXN0IEV4dGVybmFsIFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRU
 # cnVzdCBFeHRlcm5hbCBDQSBSb290MB4XDTA1MDYwNzA4MDkxMFoXDTIwMDUzMDEw
@@ -201,28 +148,28 @@ else {"No script"}
 # LzEzMDEGA1UEAxMqR28gRGFkZHkgU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0
 # eSAtIEcyAgkAztwyBwg+/fkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwxCjAI
 # oAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIB
-# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFHNsUQ1h6yYvLb4zarb
-# F0I9jbnNMA0GCSqGSIb3DQEBAQUABIICALPpTP0Vprpppstm/e9vrBTyVcjL28VC
-# kQMzsgjMCchrQUNce+aEIaIpfHt9y3JnK3ue2BSxV9p8HQVWIaXBSmgzplGqqApL
-# 8e+ucSgypAcYcWJPZfM45dEWmHYfLDsrfwFnb8w91o597Oi5uFyOkZjD4vtvisrf
-# t4/MobHM5761jjchjb5YCiZIjDot5QM0axWsU10uE62DPcEimcYjDlbn2XYzw0GL
-# jxzCpcB6xKcOySWZvOtYB5C5OcthlLXekU/wlpcT1Rf2/Q0GPuz1Nc/ibDUlEin9
-# 9ksdtt7YvYd+XqGD+suwNHNslu3JlJEqVNtnrCYcHlvFXE0sike03BDLu0fW8aJT
-# 0cIgwwk01HIF1iwUB/eiVNy0GDdhOQwe/CHZz9hxnsbmC8aOspkxBEHB3TKlvjF8
-# 4aRaEdSVjB9LPt3bmlaIhYv6CjwIv5FXwCPpeoPHbdhA+gPTq1dNDNDZBSgGwu0w
-# 0307oZPx+wx9/UGPrqdmNMlK/j6Xv0FYgCnPkav1B9S+Orjuvjwr5OyfBKUw5xdl
-# VMdU9UI3mlNaXFKqT7R+ts5P2Yid8zw+cSKvazdkJN1CCB73kWQtkWyBgBoAVwR1
-# qw9cXKh6uhZO+LdtsUKzYIwIE6veNbit4Lbjwr2Y3s+vAw9k73Xa14m+4Uu6JNrB
-# rshsXssuuf7JoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
+# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFIT6rV+aprZjyIWTSwXu
+# Vz+y4z7YMA0GCSqGSIb3DQEBAQUABIICACKH3fsxtAAjRvoenjoQg2fjowFU5qSU
+# 7Po3UOEqDJ5wOPQT4IKLpj6jgdWHeI9JII4hB+9hVCxQhNCGKK0mIzXJ6gGuQlc0
+# BrtN03x5zZLVlLcvt/FQnso+vOwLjCjoPsNaldmpaBG6UQ2YmRVEutAyuFc3zLPF
+# AB1JHbZpiZb0vqgCM8lbeSiTXy5ebQJJY4j6Vt4o3B9YoxrSTskl0dW0Wwow/aWl
+# vsgyd9ID6qnvRO4Jz9sgJig7A0xAlmTxR0YW4lPBd0Bx6b018NUEz7LT7eaj4c8o
+# gw7gH4G9//I8I4bxxtAxDkAchoYs6lfKxd7G/F6jXpqaAys+7YiZESaJdxUG61QF
+# 2ib8RQ9EhpOumc3o0QRoRUte62cvVrm6jTzHow2TsI9jhUzMY59P+Jiki9UrnbnV
+# V02v1B7xbT7FS1oie5dgvbNPmw+upTaDUlOOZeqsmZESm2wYJDLdn9o8R5w5QXzz
+# 4ofTEn5s05Dv9VqCdWkmQufDbhMfX9HOOD2aPrXH2i/Yg2jn8LB5kS1H8QNxx3Ci
+# 7gPf8etIEUc6DlNOgVvfieL3mtr9Sp15Iecgykx8jrisVjy1sSMn78qlDZ4twqyx
+# S+9WLr4mMmjEgszDx50xLtV4S+ed/p29ovt2Lg/fxAvEyK1rd15XBZ5XQAund03F
+# 7Et+3ypO0QsToYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
 # BgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
 # B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMSAwHgYDVQQDExdD
 # T01PRE8gVGltZSBTdGFtcGluZyBDQQIQK3PbdGMRTFpbMkryMFdySTAJBgUrDgMC
 # GgUAoF0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
-# MTkxMjE0MTk0MTEzWjAjBgkqhkiG9w0BCQQxFgQUKlcBCgFT5jCQlabebMJI0qPv
-# FX0wDQYJKoZIhvcNAQEBBQAEggEAZoBekmv8x+4T+x6tusQDE01yVAykvb6Oighs
-# KxLlSipbLyhlN8NBD9ugdn9bWq1RumkvV2khM8F0+qizM9pS8no+aF70/B6ltT1l
-# obZLwgDVO168RmQNl4qDGnoYG/xx6/+Ns2F1ak9+Gxcv7BLBFvclexbC81BCCFfH
-# guYecKd9bqD4m0VXoV/O9tR+nEcokFCnp+UBWs3NJW3WI+MGncgKdghWkDrAqlAZ
-# gQpiKuDY5QKO8Cjzroek/iozKr74M6Ki+hIkUJkqp+cVUlnxlYOm/KE3dZ4CZ+d1
-# i9EX6J1CZdGcMAEmmbF4HuNUF7KEXyPLmjZIAc70rQTRQmGJrw==
+# MTkxMjE0MTk0MTA0WjAjBgkqhkiG9w0BCQQxFgQUpEkkwft2kxkA1qmZZR/4FjPl
+# 7pwwDQYJKoZIhvcNAQEBBQAEggEAiJFI0wktonnZmkYOmG4R2TZPnbWF9tsNldA5
+# DG3DicPOHQmtz1Vv+Tth4z//o/o92e7lfvUtX2WK/i+P0Qvj7fggsfD1ALIadW0o
+# T7GfxOr1UN4m8dlkypPTJHdrQaqemMP828Be/XzwcryCBujERJGb+WyNNZICcX7i
+# ADm8nqT4CCMmsluV5BBA+qEbS4QPZFYhnZf60jKprQ+wEL809RDieIu2lILNXc5z
+# WRD4HVYrvBLEYQCgiGI8LbopSPEkwTtkInCumi4qdk1nBHuFkLWqOJPOLWQ1dGWA
+# N9ShMc9jaCKi73+bPwsXmgXWK9hb82Fx2dgikXIw3QX07MspCQ==
 # SIG # End signature block

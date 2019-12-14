@@ -1,65 +1,41 @@
-#Declare Variables
-$SearchDirectory = "D:\Dropbox\IFTTT\"
-$CommandFile = "$SearchDirectory\cmd.txt"
-$SleepTime = 5
+# This script will start a VirtualBox machine when the user logs in.  Using the Windows auto login
+# feature is recommended.  Copy StartVM.ps1 to your userprofile directory.  To open this directory in
+# a Windows Explorer Window press Windows-R and type %userprofile# then press enter.
 
-Do {
-
-#Removes the file from the directory, in case the file was not deleted. Sets the error action in case the file is not present.
-Remove-Item -Path $CommandFile -Force -ErrorAction SilentlyContinue
-
-#Loop checking to see if the file has been created and once it has it continues on. Sleep in the look to prevent CPU pegging
-Do {
-Start-Sleep -Seconds $SleepTime
-$FileCheck = Test-Path -Path $CommandFile
-}
-Until ($FileCheck -eq $True)
-
-$IFTT= Get-Content $CommandFile -First 1
-
-#Removes the shutdown file to prevent an imediate shutdown when the computer starts back up
-Remove-Item -Path $CommandFile
-
-#Shuts the computer down forcefully but gracefully
-#Stop-Computer -Force
-
-$TS = Get-Date -Format G
+# You need a copy of this file for each VM you want to run at startup in your start directory.
+# To open this directory in a Windows Explorer Window press Windows-R and type shell:startup then
+# press enter.  Copy this file and rename it so that it matches the name of the VM you see
+# in the VirtualBox Mangaer GUI.
 
 
-switch ( $IFTT )
-{
-    Reboot
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\RebootNUC.ps1"
-    }
-    Shutdown
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\ShutdownVbox.ps1"
-    }
-    default 
-    {
-       $PSscript = 'unknown'
-    }
+$default = "Y"
+$seconds = 4
+
+Import-module ([io.path]::combine(${env:userprofile}, 'StartVM.ps1')) -Force
+
+$vm = $MyInvocation.MyCommand.Name.Replace(".ps1","")
+
+Write-Host "Virtual Machine: " -NoNewline Write-Host $VM.ToUpper() -ForegroundColor Yellow
+Write-Host ""
+
+$r = Timeout-Prompt -message $("Press Y to start VM, or any other key to cancel") -default $default -seconds $seconds
+Write-Host ""
+
+if ($r -eq "Y"){
+    Write-Host "Starting Virtual Machine: " -NoNewline 
+    Write-Host $VM.ToUpper() -ForegroundColor Yellow
+    Write-Host ""
+    & 'C:\Program Files\Oracle\VirtualBox\VBoxManage.exe' startvm $vm --type headless
+} else {
+    Write-Host "Start cancelled: " -ForegroundColor Red
+    Write-Host ""
 }
 
-
-$numTabs = 8
-
-"$IFTT, $PSscript, $TS" | Out-File "$SearchDirectory\log.txt" -Append 
-
-if (Test-Path $PSscript) 
-{
-    & $PSscript
-}
-else {"No script"}
-
- 
-} while (1)
 # SIG # Begin signature block
 # MIIfoQYJKoZIhvcNAQcCoIIfkjCCH44CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBKfX8q1DrWGIaXRgGIQoJXK/
-# FFKgghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrg7hzGUaWRP8RV62AO2xhe8Y
+# WcSgghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
 # AQUFADBvMQswCQYDVQQGEwJTRTEUMBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNV
 # BAsTHUFkZFRydXN0IEV4dGVybmFsIFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRU
 # cnVzdCBFeHRlcm5hbCBDQSBSb290MB4XDTA1MDYwNzA4MDkxMFoXDTIwMDUzMDEw
@@ -201,28 +177,28 @@ else {"No script"}
 # LzEzMDEGA1UEAxMqR28gRGFkZHkgU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0
 # eSAtIEcyAgkAztwyBwg+/fkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwxCjAI
 # oAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIB
-# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFHNsUQ1h6yYvLb4zarb
-# F0I9jbnNMA0GCSqGSIb3DQEBAQUABIICALPpTP0Vprpppstm/e9vrBTyVcjL28VC
-# kQMzsgjMCchrQUNce+aEIaIpfHt9y3JnK3ue2BSxV9p8HQVWIaXBSmgzplGqqApL
-# 8e+ucSgypAcYcWJPZfM45dEWmHYfLDsrfwFnb8w91o597Oi5uFyOkZjD4vtvisrf
-# t4/MobHM5761jjchjb5YCiZIjDot5QM0axWsU10uE62DPcEimcYjDlbn2XYzw0GL
-# jxzCpcB6xKcOySWZvOtYB5C5OcthlLXekU/wlpcT1Rf2/Q0GPuz1Nc/ibDUlEin9
-# 9ksdtt7YvYd+XqGD+suwNHNslu3JlJEqVNtnrCYcHlvFXE0sike03BDLu0fW8aJT
-# 0cIgwwk01HIF1iwUB/eiVNy0GDdhOQwe/CHZz9hxnsbmC8aOspkxBEHB3TKlvjF8
-# 4aRaEdSVjB9LPt3bmlaIhYv6CjwIv5FXwCPpeoPHbdhA+gPTq1dNDNDZBSgGwu0w
-# 0307oZPx+wx9/UGPrqdmNMlK/j6Xv0FYgCnPkav1B9S+Orjuvjwr5OyfBKUw5xdl
-# VMdU9UI3mlNaXFKqT7R+ts5P2Yid8zw+cSKvazdkJN1CCB73kWQtkWyBgBoAVwR1
-# qw9cXKh6uhZO+LdtsUKzYIwIE6veNbit4Lbjwr2Y3s+vAw9k73Xa14m+4Uu6JNrB
-# rshsXssuuf7JoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
+# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFKksdagXTA7iJYVl0ZiA
+# ux4nL8SMMA0GCSqGSIb3DQEBAQUABIICAB7s0eMI3td5cbWWw/NHAGysfWpkmvBD
+# LkJT4u+FWpcLasR8Jw0VoFXGHkoYawB8kqAUspKvVbsWNmAU4HYQ4GOyfSh48JSu
+# k9qH9SYIMWsoBZbpJS42GahoZ81gXjyaZQWPz6wbnFFlZC8WdyWooM0qff3IJkhj
+# QYt1bFNLhoUBIC2EulY9hki3Xl6Z98ep6nXvuYChCHeA1L/2bIo+4QsMJgi8dc7n
+# rO4dbxCaqn2SucdMwyu+p9e5lSeZNDtwZ4wotiH0ctjzF1+ZBNtHhEJtcE6YyPCP
+# PnVUOK70DHgzyl31y9Yi/YDLIFEXcm5U1H/rLyv6mGZLmmG83M0aca/LbxUXzI6C
+# 7W6imqUQq9zL+/GeGMFo1Oo/wQAvGbSKH7glhJW+wVRYuL3PvLUjiIG0GFOEYg/r
+# /9N3v8kg/eXk9h/T+4MKB3N7c5Jz6Ad4jyOFGS2wkLHHcxgYcwB7p1kFz2RByWTL
+# jsUpjXGsetpkKyKMGl7IovS/ieDMvU3orwAXVlgOE4TYbK8Wv82VUYUqAZr3y1ls
+# GJa+qiBiOzurFM8sBY8w8wu9S1Bm92cGgjcWEMxwscrTo4bRD8kLNEO7DkFPF489
+# CbLf8j/BTr5AW8mtj0eq5bi5N20/Su92+s31cim2rCrsILMK0f+jYtEhMtJ3Dt4i
+# ArPD/yw0HJ7AoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
 # BgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
 # B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMSAwHgYDVQQDExdD
 # T01PRE8gVGltZSBTdGFtcGluZyBDQQIQK3PbdGMRTFpbMkryMFdySTAJBgUrDgMC
 # GgUAoF0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
-# MTkxMjE0MTk0MTEzWjAjBgkqhkiG9w0BCQQxFgQUKlcBCgFT5jCQlabebMJI0qPv
-# FX0wDQYJKoZIhvcNAQEBBQAEggEAZoBekmv8x+4T+x6tusQDE01yVAykvb6Oighs
-# KxLlSipbLyhlN8NBD9ugdn9bWq1RumkvV2khM8F0+qizM9pS8no+aF70/B6ltT1l
-# obZLwgDVO168RmQNl4qDGnoYG/xx6/+Ns2F1ak9+Gxcv7BLBFvclexbC81BCCFfH
-# guYecKd9bqD4m0VXoV/O9tR+nEcokFCnp+UBWs3NJW3WI+MGncgKdghWkDrAqlAZ
-# gQpiKuDY5QKO8Cjzroek/iozKr74M6Ki+hIkUJkqp+cVUlnxlYOm/KE3dZ4CZ+d1
-# i9EX6J1CZdGcMAEmmbF4HuNUF7KEXyPLmjZIAc70rQTRQmGJrw==
+# MTkxMjE0MTk0MTA3WjAjBgkqhkiG9w0BCQQxFgQUNEmpcVTCDJA9vdixnGBrKLwm
+# ca8wDQYJKoZIhvcNAQEBBQAEggEAOrsrDkMkwsgJQzxQnjx4vYVhJBxbxsYn9Ej9
+# vS1ghJJW/KhsSFx0VhlE83WhKtw8Yps1jFvZ4IbylsVDYk8Jy1QZ9Ctlfl9CcIfG
+# IOXvD9lgHz1LFeAYy+ImSRSeBAbk68wP/521mUlDpWwuUBZqsg/MwAzP+adPFi6r
+# glZtP6d7lC3NI50vdtJuqEMFeUoPl6BbNXn6ZO+rTywkIh0YEzxzUwN/EcKiS/Yh
+# cM9+f/7LMwi1Ag7tcDDBcs3uUMOovlpFLdqPbcXfVHPcjK6lNb0dK+auvpapAo5x
+# uCoq/Imvg6mq/OQsudosTw43K/mVOUKu2OQVzDnPQ9zt/TeNFA==
 # SIG # End signature block

@@ -1,65 +1,50 @@
-#Declare Variables
-$SearchDirectory = "D:\Dropbox\IFTTT\"
-$CommandFile = "$SearchDirectory\cmd.txt"
-$SleepTime = 5
+﻿function Timeout-Prompt {
 
-Do {
+    Param(
+        [string]$message = 'Press Y to start VM, or any other key to cancel',
+        [string]$default = 'Y',
+           [int]$seconds = 5
+    )
 
-#Removes the file from the directory, in case the file was not deleted. Sets the error action in case the file is not present.
-Remove-Item -Path $CommandFile -Force -ErrorAction SilentlyContinue
+    $timeout = (Get-Date).AddSeconds($seconds)
+    $default = $default.ToUpper().Trim()
+    Write-Host $message -NoNewline
+    Write-Host " ($default)" -ForegroundColor Yellow -NoNewline
+    Write-Host " within"$seconds "seconds"
 
-#Loop checking to see if the file has been created and once it has it continues on. Sleep in the look to prevent CPU pegging
-Do {
-Start-Sleep -Seconds $SleepTime
-$FileCheck = Test-Path -Path $CommandFile
-}
-Until ($FileCheck -eq $True)
-
-$IFTT= Get-Content $CommandFile -First 1
-
-#Removes the shutdown file to prevent an imediate shutdown when the computer starts back up
-Remove-Item -Path $CommandFile
-
-#Shuts the computer down forcefully but gracefully
-#Stop-Computer -Force
-
-$TS = Get-Date -Format G
-
-
-switch ( $IFTT )
-{
-    Reboot
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\RebootNUC.ps1"
+    while (-not $host.ui.RawUI.KeyAvailable) {
+        $CT = Get-Date
+    #    Write-Host $i $CT - $timeout
+        if ($CT -ge $timeout) {
+            Break
+        }
     }
-    Shutdown
-    {
-       $PSscript = "D:\Dropbox\PowershellScripts\ShutdownVbox.ps1"
+
+    if ($host.ui.RawUI.KeyAvailable) {
+
+        [string]$response = ($host.ui.RawUI.ReadKey("IncludeKeyDown,NoEcho")).character
+
     }
-    default 
-    {
-       $PSscript = 'unknown'
+
+    else {
+    
+        $response = $default
+
     }
+
+    return $response.ToUpper()
 }
 
 
-$numTabs = 8
+#$r = Timeout-Prompt -message "Press Y to start VM, or any other key to cancel" -default "Y" -timeout 5
 
-"$IFTT, $PSscript, $TS" | Out-File "$SearchDirectory\log.txt" -Append 
+#"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm generic --type headless
 
-if (Test-Path $PSscript) 
-{
-    & $PSscript
-}
-else {"No script"}
-
- 
-} while (1)
 # SIG # Begin signature block
 # MIIfoQYJKoZIhvcNAQcCoIIfkjCCH44CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBKfX8q1DrWGIaXRgGIQoJXK/
-# FFKgghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUaT5FBKMxTKs+4LYGc9sr1zFI
+# 9KWgghl7MIIEhDCCA2ygAwIBAgIQQhrylAmEGR9SCkvGJCanSzANBgkqhkiG9w0B
 # AQUFADBvMQswCQYDVQQGEwJTRTEUMBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNV
 # BAsTHUFkZFRydXN0IEV4dGVybmFsIFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRU
 # cnVzdCBFeHRlcm5hbCBDQSBSb290MB4XDTA1MDYwNzA4MDkxMFoXDTIwMDUzMDEw
@@ -201,28 +186,28 @@ else {"No script"}
 # LzEzMDEGA1UEAxMqR28gRGFkZHkgU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0
 # eSAtIEcyAgkAztwyBwg+/fkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwxCjAI
 # oAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIB
-# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFHNsUQ1h6yYvLb4zarb
-# F0I9jbnNMA0GCSqGSIb3DQEBAQUABIICALPpTP0Vprpppstm/e9vrBTyVcjL28VC
-# kQMzsgjMCchrQUNce+aEIaIpfHt9y3JnK3ue2BSxV9p8HQVWIaXBSmgzplGqqApL
-# 8e+ucSgypAcYcWJPZfM45dEWmHYfLDsrfwFnb8w91o597Oi5uFyOkZjD4vtvisrf
-# t4/MobHM5761jjchjb5YCiZIjDot5QM0axWsU10uE62DPcEimcYjDlbn2XYzw0GL
-# jxzCpcB6xKcOySWZvOtYB5C5OcthlLXekU/wlpcT1Rf2/Q0GPuz1Nc/ibDUlEin9
-# 9ksdtt7YvYd+XqGD+suwNHNslu3JlJEqVNtnrCYcHlvFXE0sike03BDLu0fW8aJT
-# 0cIgwwk01HIF1iwUB/eiVNy0GDdhOQwe/CHZz9hxnsbmC8aOspkxBEHB3TKlvjF8
-# 4aRaEdSVjB9LPt3bmlaIhYv6CjwIv5FXwCPpeoPHbdhA+gPTq1dNDNDZBSgGwu0w
-# 0307oZPx+wx9/UGPrqdmNMlK/j6Xv0FYgCnPkav1B9S+Orjuvjwr5OyfBKUw5xdl
-# VMdU9UI3mlNaXFKqT7R+ts5P2Yid8zw+cSKvazdkJN1CCB73kWQtkWyBgBoAVwR1
-# qw9cXKh6uhZO+LdtsUKzYIwIE6veNbit4Lbjwr2Y3s+vAw9k73Xa14m+4Uu6JNrB
-# rshsXssuuf7JoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
+# CzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFDosiW1VHR/N8T4ojaZK
+# rF71okcXMA0GCSqGSIb3DQEBAQUABIICAH0TF4X3Nc+8mZpC53ruZ8bEU/pkPU/1
+# UQgRbPzPqA0SK9CAyg9NitFy+jsytvluUPnjv/LsHgTu29VVzM6qMJQqMSpgBx1S
+# RPHJ5OJ4ROHLn/FoHzOjKDroF/sMMyQsvnuHY/xp6i/ALFRdnqs06jFPGLccwsik
+# 4qs/Ux6I/1Ku505Vcq/xm4lHUuQnWseeeE8KCO5v+LLQDcuSp/ndj8vzD5Q0A5VN
+# AcS9FBpXXUJZsEQJYQYgEqC+8yQ8xSgrBWmnEfUMMCn8vCbYb/MBueR3zJ3+5Bcq
+# ejgoVA7lfvMK6VAwviwzaDOWbEe1Iyh5lnTt/SqY8ogfz0gO93lM/Di2EIFY2fTw
+# X9GTaHQztUAXTg0CEA6HomnBIZkCMMA+RgjOqFKryQcdcdr7uLe8PiuSs0itv0/a
+# bmD8+zCUYQzVoAVQnWGRTcqEkzEPL55zuq2XYpdYHg6sSDx+YuXbyV7tlbQM64rY
+# DGvIpJKwRgQSzrovcMFFFmMwOhtmkaF8fI/a4GIuiyVNcraYZleIIDPFkkn3t/kO
+# un45HXm/OU4laKeSFRxXAyci3/zCTLBNqJPHp393vOatlsNyPrsv4de/HPqD1DmP
+# VMIpeNZKVBU5YkrHGXPmQRQA4J1GLFeQDiTXk6jhq/oiQjV4zv3YX/S+mO7pCe55
+# /aj+AQXDiki9oYICKDCCAiQGCSqGSIb3DQEJBjGCAhUwggIRAgEBMIGOMHoxCzAJ
 # BgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
 # B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMSAwHgYDVQQDExdD
 # T01PRE8gVGltZSBTdGFtcGluZyBDQQIQK3PbdGMRTFpbMkryMFdySTAJBgUrDgMC
 # GgUAoF0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
-# MTkxMjE0MTk0MTEzWjAjBgkqhkiG9w0BCQQxFgQUKlcBCgFT5jCQlabebMJI0qPv
-# FX0wDQYJKoZIhvcNAQEBBQAEggEAZoBekmv8x+4T+x6tusQDE01yVAykvb6Oighs
-# KxLlSipbLyhlN8NBD9ugdn9bWq1RumkvV2khM8F0+qizM9pS8no+aF70/B6ltT1l
-# obZLwgDVO168RmQNl4qDGnoYG/xx6/+Ns2F1ak9+Gxcv7BLBFvclexbC81BCCFfH
-# guYecKd9bqD4m0VXoV/O9tR+nEcokFCnp+UBWs3NJW3WI+MGncgKdghWkDrAqlAZ
-# gQpiKuDY5QKO8Cjzroek/iozKr74M6Ki+hIkUJkqp+cVUlnxlYOm/KE3dZ4CZ+d1
-# i9EX6J1CZdGcMAEmmbF4HuNUF7KEXyPLmjZIAc70rQTRQmGJrw==
+# MTkxMjE0MTk0MTEwWjAjBgkqhkiG9w0BCQQxFgQUn1LvU9E8aSUkC7R5/IL9+fQz
+# HOQwDQYJKoZIhvcNAQEBBQAEggEAU7gZBBCPxs8D+MIN6Fg0ZsaeebxKXIFAW5o7
+# P6J8COLJUZ0oq23zbygMwAWxvGnSHWRUmCJV6/fPe6CWN2uz4x1tnD/ihGDgM15u
+# KtkvvmGtNFg/iZUI+ncYk52mvJ2KZiJ4mYA/Ba4p47zrYWREDjhqKRqYoQA/zcNX
+# BkP4k37osp0i7nNO11iQB9btdb0CGk6XaGdmk5iZbuuxmQMc1fdTmRbp/HZxwt0I
+# Jd1by5tD+X3uVGffM2Ssg1hURq9OtvtS4HrKdRJz4ohyc8ePi27RWaNyHCB2W0I4
+# gUGCxRNuUs/LpN+M1GNWprWazTF7i+P6F9BZw1dNwD9w4zT6mw==
 # SIG # End signature block
