@@ -1,6 +1,14 @@
 # Shutdown PC via IFTTT
 A PowerShell script that looks for a file placed by IFTTT and if found shuts the computer down.
 
+### Fork modifications
+
+I modified this script to run infinitly in a loop.  With IFTTT I created a service with Google Assistant that uses "Say a phrase with an igredient" and configured it so that you can say something like `Ok Google, execute **shutdown**`.  You can replace `shutdown` with any word.  Inside the script it monitors the file `cmd.txt` which will contain the "ingredient" name.  In a switch statement it searches for a Powershell script that matches that ingredient and then executes it.
+
+I also don't bother with creating the task beause my machine always auto-logins in.  And I run the script by putting a shortcut to my Powershell script in
+
+   C:\Users\username\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+
 ## Setup
 
 ### In IFTTT
@@ -8,7 +16,7 @@ A PowerShell script that looks for a file placed by IFTTT and if found shuts the
   1. <img src="http://i.imgur.com/hc2x9P7.png" width="480">
 2. For the action service, choose a cloud storage platform of your choice (Dropbox, Google Drive, OneDrive, etc.) I've chosen Dropbox for my example for it's fast desktop sync and the ability to create text files directly with IFTTT. If this is the first time you've used the Dropbox service in IFTTT, you'll have to log in and connect your account.
 3. Choose the "Create a text file" option.
-4. For the file name, enter "shutdown". For the content it can be anything it does not matter. And i've set it to place the file in the IFTTT folder in the root of the Dropbox folder.
+4. For the file name, enter "cmd". For the content it can be anything it does not matter. And i've set it to place the file in the IFTTT folder in the root of the Dropbox folder.
   1. <img src="http://i.imgur.com/Bve9XJ2.png" width="400">
 5. Optionally rename the applet and click "Finish"
 
